@@ -2,21 +2,37 @@
 set -e
 
 # preload data
-if [ -d /test_data.d -a ! -f /data/dump.rdb ]; then
-  echo "Loading test data..."
+preload() {
+  if [ -f /redis.aof ]; then
+    echo "AOF file detected... "
+    cp /redis.aof /data/appendonly.aof
+  elif [ -f /redis.rdb ]; then
+    echo "RDB file detected... "
+    cp /redis.rdb /data/dump.rdb
+  fi
+
   redis-server - <<EOF
 bind 127.0.0.1
 daemonize yes
+appendonly yes
 EOF
-
   sleep 1
-  for file in /test_data.d/*; do
-    echo "... processing: $file"
-    redis-cli < "$file" >/dev/null
-  done
+
+  if [ -d /test_data.d ]; then
+    for file in /test_data.d/*; do
+      echo "... processing: $file"
+      redis-cli < "$file" >/dev/null
+    done
+  fi
+
   echo "... done.  Continuing startup."
   redis-cli save >/dev/null
   redis-cli shutdown >/dev/null
+}
+
+if [ ! -f /data/dump.rdb ]; then
+  echo "Loading test data..."
+  preload
 fi
 
 # first arg is `-f` or `--some-option`
