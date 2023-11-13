@@ -3,9 +3,11 @@ set -e
 
 # preload data
 preload() {
+  AOF=no
   if [ -f /redis.aof ]; then
     echo "AOF file detected... "
     cp /redis.aof /data/appendonly.aof
+    AOF=yes
   elif [ -f /redis.rdb ]; then
     echo "RDB file detected... "
     cp /redis.rdb /data/dump.rdb
@@ -14,7 +16,7 @@ preload() {
   redis-server - <<EOF
 bind 127.0.0.1
 daemonize yes
-appendonly yes
+appendonly ${AOF}
 EOF
   sleep 1
 
