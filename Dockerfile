@@ -1,4 +1,4 @@
-FROM redis:7.0.14-alpine
+FROM redis:8.10-alpine
 LABEL uk.co.oozlum.version="1.0"
 LABEL uk.co.oozlum.description="Redis preloaded data container"
 
